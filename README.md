@@ -40,7 +40,7 @@ A Chrome extension that allows you to capture screenshots and analyze them using
 
 ## Requirements
 
-- Google Chrome browser
+- Browser
 - Gemini API key
 - Active internet connection
 
