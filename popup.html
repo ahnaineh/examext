@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Gemini Screenshot Assistant</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Gemini Screenshot Assistant</h1>
+        <div class="settings">
+            <h2>Settings</h2>
+            <div class="setting-item">
+                <label for="apiKey">Gemini API Key:</label>
+                <input type="password" id="apiKey" placeholder="Enter your Gemini API key">
+                <button id="saveApiKey">Save</button>
+            </div>
+            <div class="shortcut-info">
+                <p>Press <kbd>Alt+Shift+S</kbd> to activate screenshot mode, then drag to capture an area.</p>
+            </div>
+        </div>
+        <div class="status-message" id="statusMessage"></div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+
+</html>

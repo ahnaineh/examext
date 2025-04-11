@@ -1,0 +1,57 @@
+{
+    "manifest_version": 3,
+    "name": "Gemini Screenshot Assistant",
+    "version": "1.0",
+    "description": "Capture screenshots and analyze them with Gemini API",
+    "permissions": [
+        "activeTab",
+        "storage",
+        "scripting",
+        "commands",
+        "tabs"
+    ],
+    "host_permissions": [
+        "https://generativelanguage.googleapis.com/*"
+    ],
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "options_page": "options.html",
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "html2canvas.js",
+                "content.js"
+            ],
+            "css": [
+                "styles.css"
+            ]
+        }
+    ],
+    "commands": {
+        "take-screenshot": {
+            "suggested_key": {
+                "default": "Alt+Shift+S"
+            },
+            "description": "Take a screenshot"
+        },
+        "take-screenshot-with-prompt": {
+            "suggested_key": {
+                "default": "Alt+Shift+Q"
+            },
+            "description": "Take a screenshot and edit prompt before submission"
+        },
+        "take-multiple-screenshots": {
+            "suggested_key": {
+                "default": "Alt+Shift+M"
+            },
+            "description": "Take multiple screenshots and submit together"
+        }
+    }
+}

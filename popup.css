@@ -1,0 +1,92 @@
+body {
+    font-family: Arial, sans-serif;
+    width: 320px;
+    margin: 0;
+    padding: 16px;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+h1 {
+    font-size: 20px;
+    margin: 0;
+    color: #1a73e8;
+}
+
+h2 {
+    font-size: 16px;
+    margin: 0 0 8px 0;
+}
+
+.settings {
+    background-color: #f1f3f4;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.setting-item {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+input {
+    padding: 8px;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+button {
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    align-self: flex-start;
+}
+
+button:hover {
+    background-color: #1765cc;
+}
+
+.shortcut-info {
+    margin-top: 16px;
+    font-size: 14px;
+}
+
+kbd {
+    background-color: #eee;
+    border-radius: 3px;
+    border: 1px solid #b4b4b4;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .2);
+    color: #333;
+    display: inline-block;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 6px;
+}
+
+.status-message {
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.success {
+    background-color: #e6f4ea;
+    color: #137333;
+}
+
+.error {
+    background-color: #fce8e6;
+    color: #c5221f;
+}
