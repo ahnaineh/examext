@@ -18,6 +18,7 @@ A Chrome extension that allows you to capture screenshots and analyze them using
 
 1. Clone this repository or download the source code
 2. Open Chrome and navigate to `chrome://extensions/`
+   (or `edge://extensions/` in Edge)
 3. Enable "Developer mode" in the top right
 4. Click "Load unpacked" and select the project directory
 
