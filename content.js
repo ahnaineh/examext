@@ -360,13 +360,14 @@ function updateMultiScreenshotStatus() {
                 <div style="display:flex;align-items:center;gap:5px">
                     <kbd style="background:#f8f9fa;color:#333;border:1px solid #ccc;border-radius:3px;padding:2px 5px;font-size:12px">Escape</kbd>
                     <span>Cancel</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:5px">
+                    </div>
+                    <div style="display:flex;align-items:center;gap:5px">
                     <kbd style="background:#f8f9fa;color:#333;border:1px solid #ccc;border-radius:3px;padding:2px 5px;font-size:12px">Enter</kbd>
                     <span>Submit ${capturedScreenshots.length > 0 ? "all" : ""}</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:5px">
-                    <button id="editPromptBtn" style="background:#f8f9fa;color:#333;border:1px solid #ccc;border-radius:3px;padding:2px 5px;font-size:12px;cursor:pointer;">Edit Prompt</button>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:5px">
+                    <button id="editPromptBtn" style="background:#f8f9fa;color:#333;border:1px solid #ccc;border-radius:3px;padding:2px 5px;font-size:12px;cursor:pointer;">P</button>
+                    <span>Edit Prompt</span>
                 </div>
             </div>
         `;
@@ -614,8 +615,8 @@ function displayResult(result) {
     resultElement.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
     resultElement.style.zIndex = '2147483647';
     resultElement.style.overflow = 'hidden';
-    resultElement.style.transition = 'opacity 0.3s';
-    resultElement.style.opacity = '0.9';
+    resultElement.style.transition = 'opacity 0.5s ease-in-out';
+    resultElement.style.opacity = '0.15'; // Start with low opacity
 
     // Create the content container
     const contentElement = document.createElement('div');
@@ -672,14 +673,333 @@ function displayResult(result) {
     // Add to document
     document.body.appendChild(resultElement);
 
-    // Add hover effect
+    // Add hover effect with delay
+    let fadeTimeout;
+    
     resultElement.addEventListener('mouseenter', () => {
+        clearTimeout(fadeTimeout);
         resultElement.style.opacity = '1';
     });
 
     resultElement.addEventListener('mouseleave', () => {
-        resultElement.style.opacity = '0.9';
+        fadeTimeout = setTimeout(() => {
+            if (resultElement.parentNode) { // Check if element still exists
+                resultElement.style.opacity = '0.15';
+            }
+        }, 2000); // 2 second delay before fading
     });
+
+    // Add escape key handler
+    const handleResultKeyDown = (e) => {
+        if (e.key === 'Escape') {
+            document.removeEventListener('keydown', handleResultKeyDown);
+            if (resultElement.parentNode) {
+                resultElement.parentNode.removeChild(resultElement);
+            }
+        }
+    };
+    document.addEventListener('keydown', handleResultKeyDown);
+}
+
+// Display an error message in a notification
+function showError(errorMessage) {
+    console.error("Error:", errorMessage);
+
+    // Create error notification
+    const errorElement = document.createElement('div');
+    errorElement.className = 'gemini-error';
+    errorElement.style.position = 'fixed';
+    errorElement.style.top = '20px';
+    errorElement.style.left = '50%';
+    errorElement.style.transform = 'translateX(-50%)';
+    errorElement.style.backgroundColor = 'rgba(220, 53, 69, 0.9)';
+    errorElement.style.color = '#fff';
+    errorElement.style.padding = '10px 20px';
+    errorElement.style.borderRadius = '4px';
+    errorElement.style.fontSize = '14px';
+    errorElement.style.zIndex = '2147483647';
+    errorElement.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+
+    // Add error message
+    errorElement.textContent = errorMessage;
+
+    // Remove any existing error notifications
+    const existingError = document.querySelector('.gemini-error');
+    if (existingError) {
+        existingError.parentNode.removeChild(existingError);
+    }
+
+    // Add to document
+    document.body.appendChild(errorElement);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (errorElement.parentNode) {
+            errorElement.parentNode.removeChild(errorElement);
+        }
+    }, 5000);
+}
+
+// Show prompt editor for multiple screenshots mode
+function showMultiPromptEditor() {
+    // Store current state to restore after prompt editing
+    const currentScreenshots = [...capturedScreenshots];
+
+    // Get the default multi-prompt from storage or use a default one
+    chrome.storage.sync.get('multiPrompt', (data) => {
+        // Default original prompt for resetting
+        const originalPrompt = data.multiPrompt || `Analyze these screenshots which are related to each other. They may be parts of the same question or test. 
+Look at all the images carefully and provide a comprehensive answer that accounts for all provided information.
+Be concise but thorough. If there are multiple questions, address each one.`;
+
+        // Use current session prompt if available, otherwise use saved/default
+        let promptText = window.customMultiPrompt || originalPrompt;
+
+        // Create modal in lower right without background dimming
+        const modal = document.createElement('div');
+        modal.className = 'gemini-prompt-modal';
+        modal.style.position = 'fixed';
+        modal.style.bottom = '20px';
+        modal.style.right = '20px';
+        modal.style.zIndex = '2147483647';
+
+        // Create modal content styled for lower right position
+        const modalContent = document.createElement('div');
+        modalContent.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+        modalContent.style.borderRadius = '8px';
+        modalContent.style.width = '350px';
+        modalContent.style.maxHeight = '400px';
+        modalContent.style.padding = '15px';
+        modalContent.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+        modalContent.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+        modalContent.style.display = 'flex';
+        modalContent.style.flexDirection = 'column';
+        modalContent.style.gap = '10px';
+
+        // Title - smaller and subtle
+        const title = document.createElement('div');
+        title.textContent = 'Edit Multiple Screenshots Prompt';
+        title.style.margin = '0';
+        title.style.padding = '0';
+        title.style.fontFamily = 'system-ui, -apple-system, sans-serif';
+        title.style.fontSize = '14px';
+        title.style.color = '#555';
+        title.style.fontWeight = '500';
+
+        // Textarea for prompt editing
+        const textarea = document.createElement('textarea');
+        textarea.value = promptText;
+        textarea.style.width = '100%';
+        textarea.style.height = '150px';
+        textarea.style.padding = '8px';
+        textarea.style.fontSize = '13px';
+        textarea.style.border = '1px solid rgba(0, 0, 0, 0.1)';
+        textarea.style.borderRadius = '4px';
+        textarea.style.resize = 'vertical';
+        textarea.style.fontFamily = 'monospace';        // Button container
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.display = 'flex';
+        buttonContainer.style.justifyContent = 'flex-end';
+        buttonContainer.style.gap = '8px';
+
+        // Reset button - to restore original prompt
+        const resetButton = document.createElement('button');
+        resetButton.textContent = 'Reset';
+        resetButton.style.padding = '6px 12px';
+        resetButton.style.backgroundColor = 'rgba(108, 117, 125, 0.8)';
+        resetButton.style.color = 'white';
+        resetButton.style.border = 'none';
+        resetButton.style.borderRadius = '4px';
+        resetButton.style.cursor = 'pointer';
+        resetButton.style.fontSize = '12px';
+        resetButton.addEventListener('click', () => {
+            textarea.value = originalPrompt;
+            textarea.focus();
+        });
+
+        // Cancel button
+        const cancelButton = document.createElement('button');
+        cancelButton.textContent = 'Cancel';
+        cancelButton.style.padding = '6px 12px';
+        cancelButton.style.backgroundColor = 'rgba(240, 240, 240, 0.9)';
+        cancelButton.style.border = 'none';
+        cancelButton.style.borderRadius = '4px';
+        cancelButton.style.cursor = 'pointer';
+        cancelButton.style.fontSize = '12px';
+        cancelButton.style.color = '#555';
+        cancelButton.addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+
+        // Save as default button
+        const saveDefaultButton = document.createElement('button');
+        saveDefaultButton.textContent = 'Save Default';
+        saveDefaultButton.style.padding = '6px 12px';
+        saveDefaultButton.style.backgroundColor = 'rgba(76, 175, 80, 0.8)';
+        saveDefaultButton.style.color = 'white';
+        saveDefaultButton.style.border = 'none';
+        saveDefaultButton.style.borderRadius = '4px';
+        saveDefaultButton.style.cursor = 'pointer';
+        saveDefaultButton.style.fontSize = '12px';
+        saveDefaultButton.addEventListener('click', () => {
+            const newPrompt = textarea.value.trim();
+            chrome.storage.sync.set({ 'multiPrompt': newPrompt }, () => {
+                window.customMultiPrompt = newPrompt;
+                document.body.removeChild(modal);
+            });
+        });
+        // "Use This Time Only" button
+        const useOnceButton = document.createElement('button');
+        useOnceButton.textContent = 'Use Once';
+        useOnceButton.style.padding = '6px 12px';
+        useOnceButton.style.backgroundColor = 'rgba(33, 150, 243, 0.8)';
+        useOnceButton.style.color = 'white';
+        useOnceButton.style.border = 'none';
+        useOnceButton.style.borderRadius = '4px';
+        useOnceButton.style.cursor = 'pointer';
+        useOnceButton.style.fontSize = '12px';
+        useOnceButton.addEventListener('click', () => {
+            const newPrompt = textarea.value.trim();
+            window.customMultiPrompt = newPrompt; // Store for this session only
+            document.body.removeChild(modal);
+        });        // Add elements to the modal
+        buttonContainer.appendChild(resetButton);
+        buttonContainer.appendChild(cancelButton);
+        buttonContainer.appendChild(useOnceButton);
+        buttonContainer.appendChild(saveDefaultButton);
+
+        modalContent.appendChild(title);
+        modalContent.appendChild(textarea);
+        modalContent.appendChild(buttonContainer);
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+
+        // Focus the textarea
+        textarea.focus();
+        textarea.select();
+
+        // Add keyboard listener for Escape key
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                document.removeEventListener('keydown', handleKeyDown);
+                document.body.removeChild(modal);
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+    });
+}
+
+// Send screenshot to background script with custom prompt
+function sendWithCustomPrompt(imageData, customPrompt) {
+    chrome.runtime.sendMessage({
+        action: "analyzeScreenshot",
+        imageData: imageData,
+        customPrompt: customPrompt
+    });
+}
+
+// Display the analysis result in a floating box
+function displayResult(result) {
+    console.log("Displaying result:", result);
+
+    // Create result container
+    const resultElement = document.createElement('div');
+    resultElement.className = 'gemini-result';
+    resultElement.style.position = 'fixed';
+    resultElement.style.bottom = '20px';
+    resultElement.style.right = '20px';
+    resultElement.style.width = '300px';
+    resultElement.style.maxWidth = '80vw';
+    resultElement.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+    resultElement.style.borderRadius = '8px';
+    resultElement.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+    resultElement.style.zIndex = '2147483647';
+    resultElement.style.overflow = 'hidden';
+    resultElement.style.transition = 'opacity 0.5s ease-in-out';
+    resultElement.style.opacity = '0.15'; // Start with low opacity
+
+    // Create the content container
+    const contentElement = document.createElement('div');
+    contentElement.className = 'gemini-result-content';
+    contentElement.style.padding = '15px';
+    contentElement.style.maxHeight = '300px';
+    contentElement.style.overflowY = 'auto';
+    contentElement.style.fontSize = '14px';
+    contentElement.style.lineHeight = '1.5';
+    contentElement.style.color = '#333';
+
+    // Add the API result as text
+    contentElement.textContent = result;
+
+    // Create close button
+    const closeButton = document.createElement('button');
+    closeButton.className = 'gemini-result-close';
+    closeButton.textContent = '×';
+    closeButton.style.position = 'absolute';
+    closeButton.style.top = '5px';
+    closeButton.style.right = '5px';
+    closeButton.style.background = 'none';
+    closeButton.style.border = 'none';
+    closeButton.style.color = '#666';
+    closeButton.style.fontSize = '20px';
+    closeButton.style.cursor = 'pointer';
+    closeButton.style.width = '24px';
+    closeButton.style.height = '24px';
+    closeButton.style.display = 'flex';
+    closeButton.style.alignItems = 'center';
+    closeButton.style.justifyContent = 'center';
+    closeButton.style.borderRadius = '50%';
+
+    closeButton.addEventListener('click', () => {
+        document.body.removeChild(resultElement);
+    });
+
+    // Assemble the components
+    resultElement.appendChild(contentElement);
+    resultElement.appendChild(closeButton);
+
+    // Remove any existing result elements
+    const existingResult = document.querySelector('.gemini-result');
+    if (existingResult) {
+        existingResult.parentNode.removeChild(existingResult);
+    }
+
+    // Remove any loading indicators
+    const loading = document.querySelector('.gemini-loading');
+    if (loading) {
+        loading.parentNode.removeChild(loading);
+    }
+
+    // Add to document
+    document.body.appendChild(resultElement);
+
+    // Add hover effect with delay
+    let fadeTimeout;
+    
+    resultElement.addEventListener('mouseenter', () => {
+        clearTimeout(fadeTimeout);
+        resultElement.style.opacity = '1';
+    });
+
+    resultElement.addEventListener('mouseleave', () => {
+        fadeTimeout = setTimeout(() => {
+            if (resultElement.parentNode) { // Check if element still exists
+                resultElement.style.opacity = '0.15';
+            }
+        }, 2000); // 2 second delay before fading
+    });
+
+    // Add escape key handler
+    const handleResultKeyDown = (e) => {
+        if (e.key === 'Escape') {
+            document.removeEventListener('keydown', handleResultKeyDown);
+            if (resultElement.parentNode) {
+                resultElement.parentNode.removeChild(resultElement);
+            }
+        }
+    };
+    document.addEventListener('keydown', handleResultKeyDown);
 }
 
 // Display an error message in a notification
