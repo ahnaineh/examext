@@ -2,7 +2,7 @@
 
 ## Setup (One-time)
 
-1. Get a Gemini API key from [Google AI Developer Center](https://ai.google.dev/)
+1. Get a Gemini API key
 2. Install the extension in Chrome:
    - Open `chrome://extensions/`
    - Enable "Developer mode" (top right)
