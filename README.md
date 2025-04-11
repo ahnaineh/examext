@@ -8,7 +8,7 @@ A Chrome extension that allows you to capture screenshots and analyze them using
 - **Custom Area Selection**: Click and drag to select specific areas of the page
 - **Multiple Screenshot Mode**: Capture multiple related images and analyze them together
 - **Custom Prompts**: Edit analysis prompts before submission
-- **Instant Results**: View AI analysis results in a convenient floating window
+- **Instant Results**: View results in a convenient floating window
 - **Keyboard Shortcuts**:
   - `Alt+Shift+S`: Take single screenshot
   - `Alt+Shift+Q`: Take screenshot with custom prompt
